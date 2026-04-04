@@ -10,7 +10,13 @@
 
 ```mermaid
 
+---
+title: Схема L2 соединений
+config:
+    layout: elk
+---
 erDiagram
+
     haproxy1 }|--o{ ESXi04 : v102
     vault1 }|--o{ ESXi04 : v100
     consul1 }|--o{ ESXi04 : v101
@@ -24,7 +30,7 @@ erDiagram
     vault2 }|--o{ ESXi05 : v100
     consul2 }|--o{ ESXi05 : v101
 
-    gw1-tmp{
+    gw1-tmp:::router{
         v100-dmz-vault dhcp_server
         v101-dmz-consul dhcp_server
         v102-dmz-haproxy dhcp_server
@@ -37,7 +43,7 @@ erDiagram
     }
 
     ESXi06 :::esxi }|--o{ Servers2 : ether21
-    ESXi06 :::esxi }|..o{ SW_CORE2 : vlanXXXX
+    ESXi06 :::esxi }|..o{ SW_CORE2 : vSwitch0_vmnic2_Access_vlan_200
     ESXi06 {
         ether21 v100-199
     }
@@ -55,15 +61,31 @@ erDiagram
 
     SW-CORE-SFP {
         sfp-sfpplus1 Servers "VLAN 33,250,88,220,200,502,240,201"
-        sfp-sfpplus2 SW_CORE2 "VLAN 33,250,88,220,200,240,100-199,1001-1002"
+        sfp-sfpplus2 SW_CORE2 PK "VLAN 33,250,88,220,200,240,100-199,1001-1002"
         sfp-sfpplus3 SW_Garazh "VLAN 33,220,200,100-199, 1001-1002"
         sfp-sfpplus4 SDS-Main-Office PK "VLAN 33,250,220,200,501,502,224,225,240,201,100-199, 1001-1002"
     }
     
     SW-CORE-SFP }|--o{ SDS-Main-Office : sfp-sfpplus1
     
-    SDS-Main-Office {
-        sfp-sfpplus1 dhcp_server
+    SDS-Main-Office }|--o{ ISP_1:::ISP : bridge_ISP1
+    SDS-Main-Office }|--o{ ISP_2:::ISP : ether2
+    SDS-Main-Office:::router {
+        bridge_ISP1 ISP_1 "193.106.69.207/27"
+        ether2 ISP_2 "91.228.118.11/29"
+        sfp-sfpplus1 SW-CORE-SFTP
+        ether11_bridge_ISP1 gw2_sds-team_ru
+        ether12 gw2_sds-team_ru
+    }
+
+    gw2_sds-team_ru }o--o{ SDS-Main-Office : eth13-wan1
+    gw2_sds-team_ru }o--o{ SDS-Main-Office : eth12-lnk-to-gw1
+    gw2_sds-team_ru }|--o{ ISP_1 : eth13-wan1
+
+    gw2_sds-team_ru:::router {
+        eth13-wan1 ISP_1
+        eth13-wan1 SDS-Main-Office
+        eth12-lnk-to-gw1 SDS-Main-Office
     }
 
     Servers }|--o{ SW-CORE-SFP : sfp-sfpplus1
@@ -82,12 +104,14 @@ erDiagram
     SW_CORE2 {
         sfp-sfpplus5 Servers2 PK "VLAN 33,220,100-199,1001-1002"
         sfp-sfpplus6 gw1-tmp_sds-team_ru "Access vlan 200"
-        sfp-sfpplus6 ESXi06 "Access vlan 200"
+        sfp-sfpplus6 ESXi06 "vSwitch0, vmnic2, Access vlan 200"
         sfp-sfpplus8 SW-CORE-SFP PK "VLAN 33,200,250,220,88,240,100-199,1001-1002"
 
     }
 
     classDef dhcp-snooping stroke:#f00
     classDef esxi stroke:#0f0
+    classDef router fill:#f96
+    classDef ISP fill:#f90
 
 ```
