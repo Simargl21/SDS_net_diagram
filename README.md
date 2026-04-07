@@ -9,7 +9,6 @@
 ## L2 схема сети
 
 ```mermaid
-
 ---
 title: Схема L2 соединений
 config:
@@ -81,11 +80,13 @@ erDiagram
     gw2_sds-team_ru }o--o{ SDS-Main-Office : eth13-wan1
     gw2_sds-team_ru }o--o{ SDS-Main-Office : eth12-lnk-to-gw1
     gw2_sds-team_ru }|--o{ ISP_1 : eth13-wan1
+    gw2_sds-team_ru }o--|{ SW_CORE : bridge_sfp-sfpplus7
 
     gw2_sds-team_ru:::router {
         eth13-wan1 ISP_1
         eth13-wan1 SDS-Main-Office
         eth12-lnk-to-gw1 SDS-Main-Office
+        sfpplus1 SW_CORE
     }
 
     Servers }|--o{ SW-CORE-SFP : sfp-sfpplus1
@@ -109,9 +110,23 @@ erDiagram
 
     }
 
+    SW_CORE }o--|{ SW_Garazh : bridge_sfp-sfpplus1
+    SW_CORE }o--|{ SW_NewOffice : bridge_sfp-sfpplus4
+    SW_CORE }o--|{ Servers2 : bridge_sfp-sfpplus2
+    SW_CORE }o--|{ SW_CORE2 : bridge_sfp-sfpplus4
+    SW_CORE }|--o{ SDS-Main-Office : bridge_sfp-sfpplus4
+    SW_CORE:::dhcp-snooping {
+        sfp-sfpplus1_bridge SW_Garazh "VLAN 22,200,220,100-199"
+        sfp-sfpplus3_bridge SW_NewOffice "VLAN 33,88,220,240,250"
+        sfp-sfpplus5_bridge Servers2 PK "VLAN 33,200,220,100-199"
+        sfp-sfpplus6_bridge SW-CORE2 "VLAN 33,88,200,201,220,224,240,250,501,502,100-199"
+        sfp-sfpplus7_bridge gw2_sds-team_ru "VLAN 33,250,220,88,240,100-199,1002"
+        sfp-sfpplus8_bridge SDS-Main-Office PK "VLAN 33,88,200,201,220,224,240,250,501,502,100-199,1001"
+    }
+
     classDef dhcp-snooping stroke:#f00
     classDef esxi stroke:#0f0
     classDef router fill:#f96
     classDef ISP fill:#f90
-
+    
 ```
